@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String     @id @default(cuid())
+  username    String     @unique
+  displayName String
+  avatarUrl   String?
+  bio         String?
+  role        String     @default("user")
+  projects    Project[]
+  comments    Comment[]
+  votes       Vote[]
+  bookmarks   Bookmark[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String?
+  sortOrder   Int       @default(0)
+  projects    Project[]
+  createdAt   DateTime  @default(now())
+}
+
+model Tag {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  name        String
+  projectTags ProjectTag[]
+  createdAt   DateTime     @default(now())
+}
+
+model TechStack {
+  id                String             @id @default(cuid())
+  slug              String             @unique
+  name              String
+  projectTechStacks ProjectTechStack[]
+  createdAt         DateTime           @default(now())
+}
+
+model Project {
+  id                 String             @id @default(cuid())
+  authorId           String
+  categoryId         String
+  slug               String             @unique
+  title              String
+  summary            String
+  description        String
+  purpose            String
+  howToUse           String
+  buildNotes         String?
+  projectUrl         String
+  sourceUrl          String?
+  coverImageUrl      String
+  status             String             @default("pending")
+  difficulty         String             @default("beginner")
+  isOpenSource       Boolean            @default(false)
+  isFeatured         Boolean            @default(false)
+  viewCount          Int                @default(0)
+  externalClickCount Int                @default(0)
+  likeCount          Int                @default(0)
+  bookmarkCount      Int                @default(0)
+  commentCount       Int                @default(0)
+  hotScore           Float              @default(0)
+  submittedAt        DateTime?
+  approvedAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  author             User               @relation(fields: [authorId], references: [id])
+  category           Category           @relation(fields: [categoryId], references: [id])
+  comments           Comment[]
+  votes              Vote[]
+  bookmarks          Bookmark[]
+  reports            Report[]
+  projectTags        ProjectTag[]
+  projectTechStacks  ProjectTechStack[]
+
+  @@index([status, hotScore])
+  @@index([categoryId, status])
+  @@index([createdAt])
+}
+
+model ProjectTag {
+  projectId String
+  tagId     String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+}
+
+model ProjectTechStack {
+  projectId   String
+  techStackId String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  techStack   TechStack @relation(fields: [techStackId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, techStackId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  projectId String
+  authorId  String
+  parentId  String?
+  body      String
+  status    String    @default("visible")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id])
+  parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentThread")
+
+  @@index([projectId, createdAt])
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  value     Int      @default(1)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+model Report {
+  id         String    @id @default(cuid())
+  reporterId String
+  projectId  String?
+  targetType String
+  targetId   String
+  reason     String
+  detail     String?
+  status     String    @default("open")
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+  project    Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+}
+
+model ModerationAction {
+  id         String   @id @default(cuid())
+  actorId    String
+  targetType String
+  targetId   String
+  action     String
+  note       String?
+  createdAt  DateTime @default(now())
+}
+

@@ -1,0 +1,345 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --page: 42 26% 95%;
+  --surface: 0 0% 100%;
+  --border: 38 12% 82%;
+  --text: 30 12% 18%;
+  --muted: 28 8% 45%;
+  --primary: 30 24% 18%;
+  --primary-text: 42 26% 95%;
+  --accent: 35 32% 46%;
+  --accent-text: 0 0% 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: hsl(var(--page));
+  background-image:
+    linear-gradient(180deg, hsl(42 26% 98% / 0.94), hsl(40 22% 94% / 0.88)),
+    repeating-linear-gradient(90deg, hsl(32 12% 54% / 0.035) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(0deg, hsl(32 12% 54% / 0.026) 0 1px, transparent 1px 72px),
+    linear-gradient(135deg, hsl(var(--primary) / 0.06) 0%, transparent 38%, transparent 62%, hsl(var(--accent) / 0.06) 100%);
+  color: hsl(var(--text));
+  font-family:
+    var(--font-sans), "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, hsl(42 26% 100% / 0.45), transparent 28%);
+  opacity: 0.9;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.05), transparent 34%, transparent 66%, hsl(var(--accent) / 0.05));
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.16);
+  color: hsl(var(--text));
+}
+
+input,
+textarea,
+select {
+  background: rgba(255, 255, 255, 0.88);
+  color: hsl(var(--text));
+  outline: none;
+  font: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: hsl(var(--muted) / 0.6);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.12);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family:
+    var(--font-serif), "Noto Serif SC", ui-serif, Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+@layer utilities {
+  .bg-white {
+    background-color: hsl(var(--surface));
+  }
+
+  .bg-white\/90 {
+    background-color: hsl(var(--surface) / 0.9);
+  }
+
+  .bg-slate-50 {
+    background-color: hsl(40 18% 95%);
+  }
+
+  .bg-slate-100 {
+    background-color: hsl(40 18% 92%);
+  }
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto max-w-7xl px-4 lg:px-8;
+  }
+
+  .page-band {
+    @apply py-12 md:py-16;
+  }
+
+  .page-kicker {
+    @apply inline-flex items-center rounded-full border border-border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em];
+    background-color: rgba(255, 255, 255, 0.85);
+    color: hsl(var(--text) / 0.55);
+  }
+
+  .section-title {
+    @apply text-2xl font-semibold text-text md:text-3xl;
+  }
+
+  .section-lead {
+    @apply mt-3 max-w-2xl text-sm leading-7 md:text-base;
+    color: hsl(var(--text) / 0.68);
+  }
+
+  .panel {
+    @apply rounded-lg border border-border shadow-[0_24px_70px_rgba(70,56,29,0.08)] backdrop-blur;
+    background-color: rgba(255, 255, 255, 0.82);
+  }
+
+  .project-cover {
+    --cover-accent: 30 24% 18%;
+    @apply relative aspect-[4/3] overflow-hidden;
+    background:
+      linear-gradient(135deg, hsl(var(--cover-accent) / 0.16), transparent 48%),
+      linear-gradient(180deg, hsl(42 26% 99% / 0.94), hsl(38 18% 90% / 0.9));
+  }
+
+  .project-cover-detail {
+    @apply aspect-[16/9] min-h-[300px];
+  }
+
+  .project-cover-image {
+    @apply absolute inset-0 h-full w-full object-cover;
+    opacity: 0.9;
+  }
+
+  .project-cover:has(.project-cover-image) {
+    background: hsl(var(--text));
+  }
+
+  .project-cover:has(.project-cover-image)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, hsl(var(--text) / 0.08), hsl(var(--text) / 0.72)),
+      linear-gradient(90deg, hsl(var(--text) / 0.58), transparent 58%);
+  }
+
+  .project-cover-grid {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background-image:
+      linear-gradient(90deg, hsl(var(--text) / 0.055) 1px, transparent 1px),
+      linear-gradient(0deg, hsl(var(--text) / 0.045) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(180deg, black, transparent 88%);
+  }
+
+  .project-cover:has(.project-cover-image) .project-cover-grid {
+    opacity: 0.18;
+  }
+
+  .project-cover::after {
+    content: "";
+    position: absolute;
+    inset: auto -12% -22% 32%;
+    height: 54%;
+    border-radius: 999px;
+    background: hsl(var(--cover-accent) / 0.16);
+    filter: blur(8px);
+    transform: rotate(-8deg);
+  }
+
+  .project-cover-content {
+    @apply relative z-10 flex h-full flex-col justify-between p-5;
+  }
+
+  .project-cover-kicker {
+    @apply rounded-full border px-3 py-1 text-[11px] font-semibold;
+    border-color: hsl(var(--cover-accent) / 0.18);
+    background-color: hsl(var(--surface) / 0.64);
+    color: hsl(var(--cover-accent));
+  }
+
+  .project-cover-mark {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border text-[10px] font-semibold;
+    border-color: hsl(var(--text) / 0.12);
+    background-color: hsl(var(--surface) / 0.64);
+    color: hsl(var(--text) / 0.52);
+  }
+
+  .project-cover-title {
+    @apply max-w-[92%] text-2xl font-semibold leading-tight md:text-3xl;
+    font-family: var(--font-serif), "Noto Serif SC", ui-serif, Georgia, serif;
+    color: hsl(var(--text));
+  }
+
+  .project-cover-detail .project-cover-title {
+    @apply max-w-3xl text-3xl md:text-5xl;
+  }
+
+  .project-cover-footer {
+    @apply flex items-end justify-between gap-4 border-t pt-4 text-xs font-medium;
+    border-color: hsl(var(--text) / 0.1);
+    color: hsl(var(--text) / 0.52);
+  }
+
+  .project-cover:has(.project-cover-image) .project-cover-title,
+  .project-cover:has(.project-cover-image) .project-cover-footer {
+    color: hsl(var(--surface));
+  }
+
+  .project-cover:has(.project-cover-image) .project-cover-footer {
+    border-color: hsl(var(--surface) / 0.2);
+  }
+
+  .project-cover:has(.project-cover-image) .project-cover-kicker,
+  .project-cover:has(.project-cover-image) .project-cover-mark {
+    background-color: hsl(var(--surface) / 0.82);
+  }
+
+  .project-cover:has(.project-cover-image) .project-cover-mark {
+    color: hsl(var(--text) / 0.72);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-text px-5 py-3 text-sm font-medium text-page transition hover:-translate-y-0.5 hover:bg-[#1f1d1a];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-border px-5 py-3 text-sm font-medium text-text transition hover:border-text/20 hover:bg-white;
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-medium;
+    background-color: rgba(255, 255, 255, 0.75);
+    color: hsl(var(--text) / 0.72);
+  }
+
+  .chip-active {
+    border-color: hsl(var(--primary) / 0.22);
+    background-color: hsl(var(--primary) / 0.08);
+    color: hsl(var(--text));
+  }
+
+  .filter-chip {
+    @apply inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs font-medium transition;
+    background-color: rgba(255, 255, 255, 0.58);
+    color: hsl(var(--text) / 0.58);
+  }
+
+  .filter-chip:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--primary) / 0.2);
+    background-color: rgba(255, 255, 255, 0.9);
+    color: hsl(var(--text) / 0.84);
+  }
+
+  .filter-chip-active {
+    border-color: hsl(var(--primary) / 0.24);
+    background-color: hsl(var(--primary) / 0.1);
+    color: hsl(var(--text));
+  }
+
+  .project-action {
+    @apply inline-flex min-h-8 min-w-14 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium transition;
+    background-color: rgba(255, 255, 255, 0.62);
+    color: hsl(var(--text) / 0.52);
+  }
+
+  button.project-action:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--primary) / 0.2);
+    background-color: rgba(255, 255, 255, 0.95);
+    color: hsl(var(--text) / 0.78);
+  }
+
+  .project-action-like-active {
+    border-color: hsl(355 74% 58% / 0.34);
+    background-color: hsl(355 86% 96% / 0.92);
+    color: hsl(355 74% 48%);
+  }
+
+  .project-action-bookmark-active {
+    border-color: hsl(42 92% 54% / 0.4);
+    background-color: hsl(46 100% 94% / 0.95);
+    color: hsl(42 92% 48%);
+  }
+
+  .field {
+    @apply w-full rounded-lg border border-border px-4 py-3 text-sm transition focus:border-primary focus:ring-4 focus:ring-primary/10;
+    background-color: rgba(255, 255, 255, 0.88);
+    color: hsl(var(--text));
+  }
+
+  .field::placeholder {
+    color: hsl(var(--muted) / 0.38);
+  }
+
+  .field-area {
+    @apply min-h-28 w-full resize-y rounded-lg border border-border px-4 py-3 text-sm transition focus:border-primary focus:ring-4 focus:ring-primary/10;
+    background-color: rgba(255, 255, 255, 0.88);
+    color: hsl(var(--text));
+  }
+
+  .field-area::placeholder {
+    color: hsl(var(--muted) / 0.38);
+  }
+}
