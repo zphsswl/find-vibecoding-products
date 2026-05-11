@@ -10,3 +10,4 @@ prisma/dev.db-journal
 .gstack/
 
 .vercel
+.env*.local

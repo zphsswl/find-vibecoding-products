@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import {
   addCommentAction,
   reportProjectAction,
@@ -6,7 +7,9 @@ import {
   toggleLikeAction
 } from "@/app/projects/[slug]/actions";
 import { ProjectViewTracker, TrackedExternalLink } from "@/components/analytics-tracker";
+import { CommentSection } from "@/components/comment-section";
 import { ProjectCover } from "@/components/project-cover";
+import { getAvatarUrl } from "@/lib/avatar";
 import { getProjectDetail, getProjectSlugs } from "@/lib/projects";
 import { getCurrentUser } from "@/lib/session";
 
@@ -117,21 +120,13 @@ export default async function ProjectDetailPage({
                     发表
                   </button>
                 </form>
-                <div className="mt-6 space-y-4">
-                  {project.commentList.length === 0 ? (
-                    <p className="rounded-lg border border-dashed border-border bg-white/60 p-4 text-sm text-text/52">
-                      暂无评论，等第一条真实反馈。
-                    </p>
-                  ) : null}
-                  {project.commentList.map((comment) => (
-                    <article key={comment.id} className="rounded-lg border border-border bg-white/80 p-4">
-                      <div className="flex items-center justify-between text-xs text-text/46">
-                        <span>@{comment.author}</span>
-                        <span>{comment.createdAt.toLocaleDateString("zh-CN")}</span>
-                      </div>
-                      <p className="mt-2 text-sm leading-7 text-text/76">{comment.body}</p>
-                    </article>
-                  ))}
+                <div className="mt-6">
+                  <CommentSection
+                    comments={project.commentList}
+                    slug={project.slug}
+                    isLoggedIn={Boolean(currentUser)}
+                    currentUsername={currentUser?.username ?? null}
+                  />
                 </div>
               </section>
             ) : null}
@@ -160,7 +155,25 @@ export default async function ProjectDetailPage({
             <div className="panel p-6">
               <p className="text-sm text-text/46">项目信息</p>
               <dl className="mt-5 space-y-4 text-sm">
-                <MetaRow label="作者" value={`@${project.author}`} />
+                <div>
+                  <dt className="mb-2 text-xs text-text/42">作者</dt>
+                  <dd>
+                    <Link
+                      href={`/users/${project.author}`}
+                      className="group flex items-center gap-3 rounded-lg p-2 -mx-2 transition hover:bg-surface-strong"
+                    >
+                      <img
+                        src={getAvatarUrl(project.authorAvatarUrl, project.authorAvatarPreset)}
+                        alt={project.authorDisplayName}
+                        className="h-9 w-9 rounded-full border border-border object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-text group-hover:text-text/80">{project.authorDisplayName}</p>
+                        <p className="text-text/40">@{project.author}</p>
+                      </div>
+                    </Link>
+                  </dd>
+                </div>
                 <MetaRow label="分类" value={project.category} />
                 <MetaRow label="技术栈" value={project.tech.length ? project.tech.join(" / ") : "未标注"} />
                 <MetaRow label="来源" value={sourceLabel} />

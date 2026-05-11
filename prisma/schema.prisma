@@ -24,6 +24,8 @@ model User {
   bookmarks   Bookmark[]
   followers   Follow[]   @relation("FollowingUser")
   following   Follow[]   @relation("FollowerUser")
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
   analytics   AnalyticsEvent[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -212,4 +214,18 @@ model ModerationAction {
   action     String
   note       String?
   createdAt  DateTime @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  body       String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, createdAt])
+  @@index([receiverId, read, createdAt])
 }

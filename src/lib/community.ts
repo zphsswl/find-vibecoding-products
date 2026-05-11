@@ -1,4 +1,8 @@
 import { randomInt } from "node:crypto";
+import { avatarPresets, getAvatarUrl } from "@/lib/avatar";
+
+// Re-export avatar functions for backward-compat
+export { avatarPresets, getAvatarUrl };
 
 const displayNameLeft = [
   "Amber",
@@ -38,28 +42,6 @@ const displayNameRight = [
   "Wave"
 ];
 
-export const avatarPresets = [
-  "amber",
-  "aqua",
-  "coral",
-  "forest",
-  "indigo",
-  "lavender",
-  "lime",
-  "rose"
-];
-
-const avatarPresetSeeds: Record<string, string> = {
-  amber: "vcg-amber",
-  aqua: "vcg-aqua",
-  coral: "vcg-coral",
-  forest: "vcg-forest",
-  indigo: "vcg-indigo",
-  lavender: "vcg-lavender",
-  lime: "vcg-lime",
-  rose: "vcg-rose"
-};
-
 export function createDefaultDisplayName() {
   const left = displayNameLeft[randomInt(displayNameLeft.length)];
   const right = displayNameRight[randomInt(displayNameRight.length)];
@@ -68,11 +50,4 @@ export function createDefaultDisplayName() {
 
 export function createDefaultAvatarPreset() {
   return avatarPresets[randomInt(avatarPresets.length)];
-}
-
-export function getAvatarUrl(avatarUrl?: string | null, avatarPreset?: string | null) {
-  if (avatarUrl) return avatarUrl;
-
-  const preset = avatarPreset && avatarPreset in avatarPresetSeeds ? avatarPreset : "amber";
-  return `https://api.dicebear.com/9.x/pixel-art/svg?seed=${avatarPresetSeeds[preset]}`;
 }

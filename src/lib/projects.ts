@@ -37,11 +37,27 @@ export type ProjectDetailData = ProjectCardData & {
   updatedAt: Date;
   githubStars: number | null;
   githubStarsCheckedAt: Date | null;
+  authorDisplayName: string;
+  authorAvatarUrl: string | null;
+  authorAvatarPreset: string | null;
   commentList: Array<{
     id: string;
     body: string;
     author: string;
+    authorDisplayName: string;
+    authorAvatarUrl: string | null;
+    authorAvatarPreset: string | null;
     createdAt: Date;
+    parentId: string | null;
+    replies: Array<{
+      id: string;
+      body: string;
+      author: string;
+      authorDisplayName: string;
+      authorAvatarUrl: string | null;
+      authorAvatarPreset: string | null;
+      createdAt: Date;
+    }>;
   }>;
 };
 
@@ -321,12 +337,32 @@ export async function getProjectDetail(
     updatedAt: project.updatedAt,
     githubStars: githubSnapshot?.stars ?? null,
     githubStarsCheckedAt: githubSnapshot?.checkedAt ?? null,
-    commentList: project.comments.map((comment) => ({
-      id: comment.id,
-      body: comment.body,
-      author: comment.author.username,
-      createdAt: comment.createdAt
-    }))
+    authorDisplayName: project.author.displayName,
+    authorAvatarUrl: project.author.avatarUrl,
+    authorAvatarPreset: project.author.avatarPreset,
+    commentList: project.comments
+      .filter((c) => !c.parentId)
+      .map((comment) => ({
+        id: comment.id,
+        body: comment.body,
+        author: comment.author.username,
+        authorDisplayName: comment.author.displayName,
+        authorAvatarUrl: comment.author.avatarUrl,
+        authorAvatarPreset: comment.author.avatarPreset,
+        createdAt: comment.createdAt,
+        parentId: comment.parentId as string | null,
+        replies: project.comments
+          .filter((r) => r.parentId === comment.id)
+          .map((r) => ({
+            id: r.id,
+            body: r.body,
+            author: r.author.username,
+            authorDisplayName: r.author.displayName,
+            authorAvatarUrl: r.author.avatarUrl,
+            authorAvatarPreset: r.author.avatarPreset,
+            createdAt: r.createdAt
+          }))
+      }))
   };
 }
 

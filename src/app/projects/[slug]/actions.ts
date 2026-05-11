@@ -7,6 +7,7 @@ import { requireCurrentUser } from "@/lib/session";
 
 export async function addCommentAction(slug: string, formData: FormData) {
   const body = String(formData.get("body") ?? "").trim();
+  const parentId = String(formData.get("parentId") ?? "").trim() || undefined;
   if (!body) {
     return;
   }
@@ -18,11 +19,20 @@ export async function addCommentAction(slug: string, formData: FormData) {
     return;
   }
 
+  // Validate parentId if provided
+  if (parentId) {
+    const parent = await prisma.comment.findUnique({ where: { id: parentId } });
+    if (!parent || parent.projectId !== project.id) {
+      return;
+    }
+  }
+
   await prisma.comment.create({
     data: {
       projectId: project.id,
       authorId: user.id,
-      body
+      body,
+      parentId: parentId ?? null
     }
   });
 
@@ -32,6 +42,31 @@ export async function addCommentAction(slug: string, formData: FormData) {
   });
 
   revalidatePath(`/projects/${slug}`);
+}
+
+export async function toggleFollowFromCommentAction(targetUsername: string) {
+  const user = await requireCurrentUser();
+  if (user.username === targetUsername) return;
+
+  const target = await prisma.user.findUnique({ where: { username: targetUsername } });
+  if (!target) return;
+
+  const existing = await prisma.follow.findUnique({
+    where: {
+      followerId_followingId: {
+        followerId: user.id,
+        followingId: target.id
+      }
+    }
+  });
+
+  if (existing) {
+    await prisma.follow.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.follow.create({
+      data: { followerId: user.id, followingId: target.id }
+    });
+  }
 }
 
 export async function toggleLikeAction(slug: string) {
