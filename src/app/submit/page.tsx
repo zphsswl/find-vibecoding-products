@@ -7,15 +7,20 @@ export default async function SubmitPage() {
   return (
     <main className="page-band">
       <div className="page-shell">
-        <div className="mb-8 space-y-3">
-          <span className="page-kicker">Submit</span>
-          <h1 className="text-4xl font-semibold text-text md:text-5xl">提交你的作品</h1>
-          <p className="text-sm leading-7 text-text/64 md:text-base">
-            页面已经可以写入数据库，提交后会直接进入作品详情页。
-          </p>
+        <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+          <div className="max-w-3xl space-y-3">
+            <span className="page-kicker">Submit</span>
+            <h1 className="text-4xl font-semibold text-text md:text-5xl">提交你的作品</h1>
+            <p className="text-sm leading-7 text-text/64 md:text-base">
+              提交后会进入待审核状态，管理员确认内容质量和链接可访问后再公开展示。
+            </p>
+          </div>
+          <div className="panel p-5 text-sm leading-7 text-text/58">
+            完整的标题、封面、使用方式和创作目的会让作品更容易被理解，也更容易通过审核。
+          </div>
         </div>
 
-        <form action={submitProjectAction} className="panel space-y-6 p-6 md:p-8">
+        <form action={submitProjectAction} className="panel space-y-7 p-6 md:p-8">
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2 text-sm">
               <span className="font-medium text-text">项目链接</span>
@@ -64,6 +69,25 @@ export default async function SubmitPage() {
               <input name="coverImageUrl" className="field" placeholder="https://..." />
             </label>
           </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-text">本地上传封面</span>
+              <input name="coverImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" className="field" />
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-text">文字封面</span>
+              <input
+                name="coverText"
+                className="field"
+                placeholder="例如：让作品一眼说明用途"
+              />
+            </label>
+          </div>
+
+          <p className="text-xs leading-6 text-text/52">
+            你可以只填文字封面，不传图片；也可以上传本地封面图，或继续使用外部链接。
+          </p>
 
           <button type="submit" className="btn-primary">
             提交审核

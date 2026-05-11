@@ -14,7 +14,7 @@
 - Next.js App Router
 - TypeScript
 - Tailwind CSS
-- PostgreSQL / Supabase
+- SQLite / PostgreSQL / Supabase
 - Prisma
 
 ## 本地开发
@@ -24,3 +24,4 @@ npm install
 npm run dev
 ```
 
+默认本地访问码是 `.env` 中的 `SITE_ACCESS_CODE`。

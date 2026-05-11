@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
+import { createHash } from "node:crypto";
 
 const prisma = new PrismaClient();
+
+const PASSWORD_PEPPER = process.env.PASSWORD_PEPPER ?? "local-vcg-password-pepper";
+const defaultPassword = createHash("sha256").update(`${PASSWORD_PEPPER}:password123`).digest("hex");
 
 const categories = [
   ["landing", "\u5b98\u7f51"],
@@ -74,12 +78,21 @@ const projects = [
 ];
 
 async function main() {
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { username: "admin" },
-    update: {},
+    update: {
+      password: defaultPassword,
+      displayName: "Gallery Admin",
+      autoDisplayName: false,
+      avatarPreset: "indigo",
+      bio: "\u8d1f\u8d23\u5ba1\u6838\u548c\u7cbe\u9009 vibe coding \u4f5c\u54c1\u3002"
+    },
     create: {
       username: "admin",
+      password: defaultPassword,
       displayName: "Gallery Admin",
+      autoDisplayName: false,
+      avatarPreset: "indigo",
       role: "admin",
       bio: "\u8d1f\u8d23\u5ba1\u6838\u548c\u7cbe\u9009 vibe coding \u4f5c\u54c1\u3002"
     }
@@ -96,11 +109,42 @@ async function main() {
   for (const username of ["ming", "lina", "aaron"]) {
     await prisma.user.upsert({
       where: { username },
-      update: {},
+      update: {
+        password: defaultPassword,
+        displayName: username[0].toUpperCase() + username.slice(1),
+        autoDisplayName: false,
+        avatarPreset: username === "ming" ? "amber" : username === "lina" ? "rose" : "forest",
+        bio: "vibe coding \u521b\u4f5c\u8005"
+      },
       create: {
         username,
+        password: defaultPassword,
         displayName: username[0].toUpperCase() + username.slice(1),
+        autoDisplayName: false,
+        avatarPreset: username === "ming" ? "amber" : username === "lina" ? "rose" : "forest",
         bio: "vibe coding \u521b\u4f5c\u8005"
+      }
+    });
+  }
+
+  await prisma.follow.deleteMany();
+
+  const followPairs = [
+    ["admin", "ming"],
+    ["ming", "lina"],
+    ["ming", "aaron"],
+    ["lina", "ming"],
+    ["aaron", "ming"]
+  ];
+
+  for (const [followerUsername, followingUsername] of followPairs) {
+    const follower = await prisma.user.findUniqueOrThrow({ where: { username: followerUsername } });
+    const following = await prisma.user.findUniqueOrThrow({ where: { username: followingUsername } });
+
+    await prisma.follow.create({
+      data: {
+        followerId: follower.id,
+        followingId: following.id
       }
     });
   }

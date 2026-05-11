@@ -1,45 +1,33 @@
-"use client";
-
-import { useState } from "react";
+import { toggleBookmarkAction, toggleLikeAction } from "@/app/projects/[slug]/actions";
 
 type ProjectCardActionsProps = {
+  slug: string;
   likes: number;
   comments: number;
   bookmarks: number;
 };
 
-export function ProjectCardActions({ likes, comments, bookmarks }: ProjectCardActionsProps) {
-  const [liked, setLiked] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
-
+export function ProjectCardActions({ slug, likes, comments, bookmarks }: ProjectCardActionsProps) {
   return (
-    <div className="flex items-center justify-between border-t border-border pt-4 text-xs text-text/52">
-      <button
-        type="button"
-        aria-pressed={liked}
-        aria-label={liked ? "取消点赞" : "点赞"}
-        onClick={() => setLiked((value) => !value)}
-        className={`project-action ${liked ? "project-action-like-active" : ""}`}
-      >
-        <ThumbIcon />
-        <span>{likes + (liked ? 1 : 0)}</span>
-      </button>
+    <div className="flex items-center justify-between border-t border-border/70 pt-4 text-xs text-text/52">
+      <form action={toggleLikeAction.bind(null, slug)}>
+        <button type="submit" aria-label="Like" className="project-action">
+          <ThumbIcon />
+          <span>{likes}</span>
+        </button>
+      </form>
 
-      <span className="project-action" aria-label={`${comments} 条评论`}>
+      <span className="project-action" aria-label={`${comments} comments`}>
         <CommentIcon />
         <span>{comments}</span>
       </span>
 
-      <button
-        type="button"
-        aria-pressed={bookmarked}
-        aria-label={bookmarked ? "取消收藏" : "收藏"}
-        onClick={() => setBookmarked((value) => !value)}
-        className={`project-action ${bookmarked ? "project-action-bookmark-active" : ""}`}
-      >
-        <StarIcon filled={bookmarked} />
-        <span>{bookmarks + (bookmarked ? 1 : 0)}</span>
-      </button>
+      <form action={toggleBookmarkAction.bind(null, slug)}>
+        <button type="submit" aria-label="Bookmark" className="project-action">
+          <StarIcon />
+          <span>{bookmarks}</span>
+        </button>
+      </form>
     </div>
   );
 }
@@ -69,12 +57,12 @@ function CommentIcon() {
   );
 }
 
-function StarIcon({ filled }: { filled: boolean }) {
+function StarIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
       <path
         d="m12 3.4 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9L12 3.4Z"
-        fill={filled ? "currentColor" : "none"}
+        fill="none"
         stroke="currentColor"
         strokeLinejoin="round"
         strokeWidth="1.8"

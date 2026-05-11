@@ -16,12 +16,21 @@ export type ProjectCardData = {
   comments: number;
   bookmarks: number;
   status: "\u7cbe\u9009" | "\u6700\u65b0";
+  moderationStatus: string;
   image: string;
   url: string;
   sourceUrl: string | null;
 };
 
+export type CommunityStats = {
+  followers: number;
+  following: number;
+  likesReceived: number;
+  bookmarksReceived: number;
+};
+
 export type ProjectDetailData = ProjectCardData & {
+  id: string;
   description: string;
   buildNotes: string | null;
   createdAt: Date;
@@ -143,6 +152,7 @@ function mapProject(project: ProjectListRecord): ProjectCardData {
     comments: project.commentCount,
     bookmarks: project.bookmarkCount,
     status: statusLabel(project),
+    moderationStatus: project.status,
     image: project.coverImageUrl,
     url: project.projectUrl,
     sourceUrl: project.sourceUrl
@@ -203,13 +213,107 @@ export async function getProjectCards(options?: ProjectQueryOptions) {
   return projects.map(mapProject);
 }
 
-export async function getProjectDetail(slug: string): Promise<ProjectDetailData | null> {
+export async function getBookmarkedProjectCards(username: string, options?: Omit<ProjectQueryOptions, "author">) {
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: {
+      bookmarks: {
+        orderBy: { createdAt: "desc" },
+        take: options?.limit,
+        include: {
+          project: {
+            include: {
+              author: true,
+              category: true,
+              projectTags: { include: { tag: true } },
+              projectTechStacks: { include: { techStack: true } }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  return (
+    user?.bookmarks
+      .map((bookmark) => bookmark.project)
+      .filter((project) => project.status === "approved")
+      .map(mapProject) ?? []
+  );
+}
+
+export async function getUserProfileData(username: string, viewerUsername?: string | null) {
+  const user = await prisma.user.findUnique({ where: { username } });
+
+  if (!user) return null;
+
+  const viewer = viewerUsername ? await prisma.user.findUnique({ where: { username: viewerUsername } }) : null;
+
+  const [approvedCount, pendingCount, bookmarkCount, commentCount, likesReceived, bookmarksReceived, followers, following, follow] =
+    await Promise.all([
+      prisma.project.count({ where: { authorId: user.id, status: "approved" } }),
+      prisma.project.count({ where: { authorId: user.id, status: { in: ["pending", "changes_requested"] } } }),
+      prisma.bookmark.count({ where: { userId: user.id } }),
+      prisma.comment.count({ where: { authorId: user.id } }),
+      prisma.project.aggregate({
+        where: { authorId: user.id, status: "approved" },
+        _sum: { likeCount: true }
+      }),
+      prisma.project.aggregate({
+        where: { authorId: user.id, status: "approved" },
+        _sum: { bookmarkCount: true }
+      }),
+      prisma.follow.count({ where: { followingId: user.id } }),
+      prisma.follow.count({ where: { followerId: user.id } }),
+      viewer
+        ? prisma.follow.findUnique({
+            where: {
+              followerId_followingId: {
+                followerId: viewer.id,
+                followingId: user.id
+              }
+            }
+          })
+        : null
+    ]);
+
+  return {
+    user,
+    approvedCount,
+    pendingCount,
+    bookmarkCount,
+    commentCount,
+    followerCount: followers,
+    followingCount: following,
+    likedCount: likesReceived._sum.likeCount ?? 0,
+    bookmarkedCount: bookmarksReceived._sum.bookmarkCount ?? 0,
+    isFollowedByCurrentUser: Boolean(follow),
+    communityStats: {
+      followers,
+      following,
+      likesReceived: likesReceived._sum.likeCount ?? 0,
+      bookmarksReceived: bookmarksReceived._sum.bookmarkCount ?? 0
+    }
+  };
+}
+
+export async function getProjectDetail(
+  slug: string,
+  viewer?: { username: string; role: string } | null
+): Promise<ProjectDetailData | null> {
   const project = await getProjectRecord(slug);
 
   if (!project) return null;
+  if (project.status !== "approved") {
+    const canView = viewer?.role === "admin" || viewer?.username === project.author.username;
+    if (!canView) {
+      return null;
+    }
+  }
   const githubSnapshot = await getGithubSnapshot(project.sourceUrl ?? project.projectUrl);
 
   return {
+    id: project.id,
     ...mapProject(project),
     description: project.description,
     buildNotes: project.buildNotes,
@@ -233,6 +337,35 @@ export async function getProjectSlugs() {
   });
 
   return projects.map((project) => project.slug);
+}
+
+export async function getDiscoverProjectPage(options?: ProjectQueryOptions & { page?: number; pageSize?: number }) {
+  const pageSize = Math.max(1, Math.min(options?.pageSize ?? 12, 24));
+  const page = Math.max(1, options?.page ?? 1);
+
+  const projects = await getProjectListRecords({
+    category: options?.category,
+    author: options?.author,
+    featuredOnly: options?.featuredOnly,
+    limit: undefined,
+    search: options?.search,
+    sort: options?.sort,
+    tag: options?.tag,
+    tech: options?.tech
+  });
+
+  const totalCount = projects.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const start = (currentPage - 1) * pageSize;
+
+  return {
+    projects: projects.slice(start, start + pageSize).map(mapProject),
+    totalCount,
+    page: currentPage,
+    pageSize,
+    totalPages
+  };
 }
 
 type GithubSnapshot = {

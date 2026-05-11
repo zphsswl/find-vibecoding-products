@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { recordAnalyticsEvent } from "@/lib/analytics";
 import { prisma } from "@/lib/db";
-import { getActingUser } from "@/lib/session";
+import { requireCurrentUser } from "@/lib/session";
 
 export async function addCommentAction(slug: string, formData: FormData) {
   const body = String(formData.get("body") ?? "").trim();
@@ -11,9 +12,9 @@ export async function addCommentAction(slug: string, formData: FormData) {
   }
 
   const project = await prisma.project.findUnique({ where: { slug } });
-  const user = await getActingUser();
+  const user = await requireCurrentUser();
 
-  if (!project || !user) {
+  if (!project) {
     return;
   }
 
@@ -35,9 +36,9 @@ export async function addCommentAction(slug: string, formData: FormData) {
 
 export async function toggleLikeAction(slug: string) {
   const project = await prisma.project.findUnique({ where: { slug } });
-  const user = await getActingUser();
+  const user = await requireCurrentUser();
 
-  if (!project || !user) return;
+  if (!project) return;
 
   const existing = await prisma.vote.findUnique({
     where: { userId_projectId: { userId: user.id, projectId: project.id } }
@@ -59,15 +60,28 @@ export async function toggleLikeAction(slug: string) {
     });
   }
 
+  await prisma.project.update({
+    where: { id: project.id },
+    data: { viewCount: { increment: 0 } }
+  });
+
+  await recordAnalyticsEvent({
+    type: "like",
+    userId: user.id,
+    page: `/projects/${slug}`,
+    projectId: project.id,
+    projectSlug: project.slug
+  });
+
   revalidatePath(`/projects/${slug}`);
   revalidatePath("/discover");
 }
 
 export async function toggleBookmarkAction(slug: string) {
   const project = await prisma.project.findUnique({ where: { slug } });
-  const user = await getActingUser();
+  const user = await requireCurrentUser();
 
-  if (!project || !user) return;
+  if (!project) return;
 
   const existing = await prisma.bookmark.findUnique({
     where: { userId_projectId: { userId: user.id, projectId: project.id } }
@@ -89,17 +103,25 @@ export async function toggleBookmarkAction(slug: string) {
     });
   }
 
+  await recordAnalyticsEvent({
+    type: "bookmark",
+    userId: user.id,
+    page: `/projects/${slug}`,
+    projectId: project.id,
+    projectSlug: project.slug
+  });
+
   revalidatePath(`/projects/${slug}`);
   revalidatePath("/discover");
 }
 
 export async function reportProjectAction(slug: string, formData: FormData) {
   const project = await prisma.project.findUnique({ where: { slug } });
-  const user = await getActingUser();
+  const user = await requireCurrentUser();
   const reason = String(formData.get("reason") ?? "other");
   const detail = String(formData.get("detail") ?? "").trim();
 
-  if (!project || !user) return;
+  if (!project) return;
 
   await prisma.report.create({
     data: {

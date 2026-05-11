@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 
 const SESSION_COOKIE = "vcg_user";
@@ -15,12 +16,25 @@ export async function getCurrentUser() {
 }
 
 export async function getActingUser() {
-  const currentUser = await getCurrentUser();
-  if (currentUser) return currentUser;
+  return getCurrentUser();
+}
 
-  return prisma.user.findUnique({
-    where: { username: "admin" }
-  });
+export async function requireCurrentUser() {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    redirect("/auth/sign-in");
+  }
+
+  return currentUser;
+}
+
+export async function requireAdminUser() {
+  const currentUser = await requireCurrentUser();
+  if (currentUser.role !== "admin") {
+    redirect("/");
+  }
+
+  return currentUser;
 }
 
 export async function setSessionUser(username: string) {
@@ -37,4 +51,3 @@ export async function clearSessionUser() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
 }
-

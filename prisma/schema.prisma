@@ -3,23 +3,65 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
   id          String     @id @default(cuid())
   username    String     @unique
+  email       String?
+  password    String?
   displayName String
+  autoDisplayName Boolean @default(true)
   avatarUrl   String?
+  avatarPreset String?
   bio         String?
   role        String     @default("user")
   projects    Project[]
   comments    Comment[]
   votes       Vote[]
   bookmarks   Bookmark[]
+  followers   Follow[]   @relation("FollowingUser")
+  following   Follow[]   @relation("FollowerUser")
+  analytics   AnalyticsEvent[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  type       String
+  actorKey   String
+  userId     String?
+  visitorId  String?
+  page       String?
+  projectId  String?
+  projectSlug String?
+  referrer   String?
+  userAgent  String?
+  ipAddress  String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([type, createdAt])
+  @@index([actorKey, createdAt])
+  @@index([projectId, createdAt])
+  @@index([page, createdAt])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("FollowerUser", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("FollowingUser", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model Category {
@@ -171,4 +213,3 @@ model ModerationAction {
   note       String?
   createdAt  DateTime @default(now())
 }
-

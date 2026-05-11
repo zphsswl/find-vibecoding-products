@@ -3,15 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --page: 42 26% 95%;
-  --surface: 0 0% 100%;
-  --border: 38 12% 82%;
-  --text: 30 12% 18%;
-  --muted: 28 8% 45%;
-  --primary: 30 24% 18%;
-  --primary-text: 42 26% 95%;
-  --accent: 35 32% 46%;
+  --page: 36 22% 95%;
+  --surface: 42 28% 99%;
+  --surface-strong: 0 0% 100%;
+  --border: 34 12% 78%;
+  --border-strong: 28 14% 68%;
+  --text: 26 14% 15%;
+  --muted: 28 8% 40%;
+  --primary: 18 36% 24%;
+  --primary-text: 42 30% 98%;
+  --accent: 186 28% 28%;
   --accent-text: 0 0% 100%;
+  --shadow-soft: 0 24px 64px hsl(28 24% 22% / 0.08);
+  --shadow-lift: 0 16px 26px hsl(28 24% 22% / 0.1);
 }
 
 * {
@@ -28,10 +32,10 @@ body {
   min-height: 100vh;
   background-color: hsl(var(--page));
   background-image:
-    linear-gradient(180deg, hsl(42 26% 98% / 0.94), hsl(40 22% 94% / 0.88)),
-    repeating-linear-gradient(90deg, hsl(32 12% 54% / 0.035) 0 1px, transparent 1px 72px),
-    repeating-linear-gradient(0deg, hsl(32 12% 54% / 0.026) 0 1px, transparent 1px 72px),
-    linear-gradient(135deg, hsl(var(--primary) / 0.06) 0%, transparent 38%, transparent 62%, hsl(var(--accent) / 0.06) 100%);
+    linear-gradient(180deg, hsl(42 28% 99% / 0.98), hsl(39 24% 94% / 0.92)),
+    repeating-linear-gradient(90deg, hsl(32 12% 46% / 0.028) 0 1px, transparent 1px 90px),
+    repeating-linear-gradient(0deg, hsl(32 12% 46% / 0.02) 0 1px, transparent 1px 90px),
+    linear-gradient(135deg, hsl(var(--primary) / 0.06) 0%, transparent 38%, transparent 64%, hsl(var(--accent) / 0.05) 100%);
   color: hsl(var(--text));
   font-family:
     var(--font-sans), "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
@@ -45,8 +49,10 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, hsl(42 26% 100% / 0.45), transparent 28%);
-  opacity: 0.9;
+  background:
+    radial-gradient(circle at top left, hsl(var(--accent) / 0.06), transparent 26%),
+    linear-gradient(180deg, hsl(42 30% 100% / 0.52), transparent 34%);
+  opacity: 0.94;
 }
 
 body::after {
@@ -54,7 +60,9 @@ body::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(135deg, hsl(var(--primary) / 0.05), transparent 34%, transparent 66%, hsl(var(--accent) / 0.05));
+  background:
+    linear-gradient(135deg, hsl(var(--primary) / 0.05), transparent 32%, transparent 68%, hsl(var(--accent) / 0.04)),
+    radial-gradient(circle at 80% 14%, hsl(var(--accent) / 0.04), transparent 18%);
 }
 
 a {
@@ -99,7 +107,7 @@ h3,
 h4 {
   font-family:
     var(--font-serif), "Noto Serif SC", ui-serif, Georgia, serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
 }
 
 @layer utilities {
@@ -122,39 +130,42 @@ h4 {
 
 @layer components {
   .page-shell {
-    @apply mx-auto max-w-7xl px-4 lg:px-8;
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
   .page-band {
-    @apply py-12 md:py-16;
+    @apply py-12 md:py-16 lg:py-20;
   }
 
   .page-kicker {
-    @apply inline-flex items-center rounded-full border border-border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em];
-    background-color: rgba(255, 255, 255, 0.85);
-    color: hsl(var(--text) / 0.55);
+    @apply inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em];
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--surface) / 0.9);
+    color: hsl(var(--text) / 0.58);
   }
 
   .section-title {
-    @apply text-2xl font-semibold text-text md:text-3xl;
+    @apply text-2xl font-semibold text-text md:text-3xl lg:text-[2.1rem];
   }
 
   .section-lead {
     @apply mt-3 max-w-2xl text-sm leading-7 md:text-base;
-    color: hsl(var(--text) / 0.68);
+    color: hsl(var(--text) / 0.64);
   }
 
   .panel {
-    @apply rounded-lg border border-border shadow-[0_24px_70px_rgba(70,56,29,0.08)] backdrop-blur;
-    background-color: rgba(255, 255, 255, 0.82);
+    @apply rounded-[18px] border backdrop-blur-md;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--surface) / 0.84);
+    box-shadow: var(--shadow-soft);
   }
 
   .project-cover {
     --cover-accent: 30 24% 18%;
     @apply relative aspect-[4/3] overflow-hidden;
     background:
-      linear-gradient(135deg, hsl(var(--cover-accent) / 0.16), transparent 48%),
-      linear-gradient(180deg, hsl(42 26% 99% / 0.94), hsl(38 18% 90% / 0.9));
+      linear-gradient(135deg, hsl(var(--cover-accent) / 0.14), transparent 44%),
+      linear-gradient(180deg, hsl(42 28% 99% / 0.96), hsl(38 18% 91% / 0.92));
   }
 
   .project-cover-detail {
@@ -163,7 +174,7 @@ h4 {
 
   .project-cover-image {
     @apply absolute inset-0 h-full w-full object-cover;
-    opacity: 0.9;
+    opacity: 0.92;
   }
 
   .project-cover:has(.project-cover-image) {
@@ -176,8 +187,8 @@ h4 {
     inset: 0;
     z-index: 1;
     background:
-      linear-gradient(180deg, hsl(var(--text) / 0.08), hsl(var(--text) / 0.72)),
-      linear-gradient(90deg, hsl(var(--text) / 0.58), transparent 58%);
+      linear-gradient(180deg, hsl(var(--text) / 0.08), hsl(var(--text) / 0.76)),
+      linear-gradient(90deg, hsl(var(--text) / 0.58), transparent 62%);
   }
 
   .project-cover-grid {
@@ -187,7 +198,7 @@ h4 {
     background-image:
       linear-gradient(90deg, hsl(var(--text) / 0.055) 1px, transparent 1px),
       linear-gradient(0deg, hsl(var(--text) / 0.045) 1px, transparent 1px);
-    background-size: 28px 28px;
+    background-size: 34px 34px;
     mask-image: linear-gradient(180deg, black, transparent 88%);
   }
 
@@ -198,29 +209,29 @@ h4 {
   .project-cover::after {
     content: "";
     position: absolute;
-    inset: auto -12% -22% 32%;
-    height: 54%;
+    inset: auto -10% -22% 30%;
+    height: 58%;
     border-radius: 999px;
-    background: hsl(var(--cover-accent) / 0.16);
-    filter: blur(8px);
+    background: hsl(var(--cover-accent) / 0.14);
+    filter: blur(10px);
     transform: rotate(-8deg);
   }
 
   .project-cover-content {
-    @apply relative z-10 flex h-full flex-col justify-between p-5;
+    @apply relative z-10 flex h-full flex-col justify-between p-5 sm:p-6;
   }
 
   .project-cover-kicker {
-    @apply rounded-full border px-3 py-1 text-[11px] font-semibold;
-    border-color: hsl(var(--cover-accent) / 0.18);
-    background-color: hsl(var(--surface) / 0.64);
+    @apply rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em];
+    border-color: hsl(var(--cover-accent) / 0.16);
+    background-color: hsl(var(--surface-strong) / 0.78);
     color: hsl(var(--cover-accent));
   }
 
   .project-cover-mark {
     @apply inline-flex h-8 w-8 items-center justify-center rounded-full border text-[10px] font-semibold;
     border-color: hsl(var(--text) / 0.12);
-    background-color: hsl(var(--surface) / 0.64);
+    background-color: hsl(var(--surface-strong) / 0.78);
     color: hsl(var(--text) / 0.52);
   }
 
@@ -235,7 +246,7 @@ h4 {
   }
 
   .project-cover-footer {
-    @apply flex items-end justify-between gap-4 border-t pt-4 text-xs font-medium;
+    @apply flex items-end justify-between gap-4 border-t pt-4 text-[11px] font-medium uppercase tracking-[0.14em];
     border-color: hsl(var(--text) / 0.1);
     color: hsl(var(--text) / 0.52);
   }
@@ -259,36 +270,54 @@ h4 {
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-text px-5 py-3 text-sm font-medium text-page transition hover:-translate-y-0.5 hover:bg-[#1f1d1a];
+    @apply inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-text));
+    box-shadow: 0 10px 24px hsl(var(--primary) / 0.16);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    background-color: hsl(28 18% 15%);
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border border-border px-5 py-3 text-sm font-medium text-text transition hover:border-text/20 hover:bg-white;
-    background-color: rgba(255, 255, 255, 0.8);
+    @apply inline-flex items-center justify-center rounded-full border px-5 py-3 text-sm font-medium transition;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--surface-strong) / 0.84);
+    color: hsl(var(--text));
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--border-strong));
+    background-color: hsl(var(--surface-strong) / 0.94);
   }
 
   .chip {
-    @apply inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-medium;
-    background-color: rgba(255, 255, 255, 0.75);
+    @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--surface-strong) / 0.8);
     color: hsl(var(--text) / 0.72);
   }
 
   .chip-active {
-    border-color: hsl(var(--primary) / 0.22);
+    border-color: hsl(var(--primary) / 0.2);
     background-color: hsl(var(--primary) / 0.08);
     color: hsl(var(--text));
   }
 
   .filter-chip {
-    @apply inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs font-medium transition;
-    background-color: rgba(255, 255, 255, 0.58);
+    @apply inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--surface-strong) / 0.72);
     color: hsl(var(--text) / 0.58);
   }
 
   .filter-chip:hover {
     transform: translateY(-1px);
     border-color: hsl(var(--primary) / 0.2);
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: hsl(var(--surface-strong) / 0.94);
     color: hsl(var(--text) / 0.84);
   }
 
@@ -299,15 +328,16 @@ h4 {
   }
 
   .project-action {
-    @apply inline-flex min-h-8 min-w-14 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium transition;
-    background-color: rgba(255, 255, 255, 0.62);
-    color: hsl(var(--text) / 0.52);
+    @apply inline-flex min-h-8 min-w-14 items-center justify-center gap-1.5 rounded-full border px-3 text-xs font-medium transition;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--surface-strong) / 0.74);
+    color: hsl(var(--text) / 0.58);
   }
 
   button.project-action:hover {
     transform: translateY(-1px);
-    border-color: hsl(var(--primary) / 0.2);
-    background-color: rgba(255, 255, 255, 0.95);
+    border-color: hsl(var(--primary) / 0.18);
+    background-color: hsl(var(--surface-strong) / 0.94);
     color: hsl(var(--text) / 0.78);
   }
 
@@ -324,8 +354,9 @@ h4 {
   }
 
   .field {
-    @apply w-full rounded-lg border border-border px-4 py-3 text-sm transition focus:border-primary focus:ring-4 focus:ring-primary/10;
-    background-color: rgba(255, 255, 255, 0.88);
+    @apply w-full rounded-[14px] border px-4 py-3 text-sm transition focus:border-primary focus:ring-4 focus:ring-primary/10;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--surface-strong) / 0.92);
     color: hsl(var(--text));
   }
 
@@ -334,8 +365,9 @@ h4 {
   }
 
   .field-area {
-    @apply min-h-28 w-full resize-y rounded-lg border border-border px-4 py-3 text-sm transition focus:border-primary focus:ring-4 focus:ring-primary/10;
-    background-color: rgba(255, 255, 255, 0.88);
+    @apply min-h-28 w-full resize-y rounded-[14px] border px-4 py-3 text-sm transition focus:border-primary focus:ring-4 focus:ring-primary/10;
+    border-color: hsl(var(--border));
+    background-color: hsl(var(--surface-strong) / 0.92);
     color: hsl(var(--text));
   }
 
