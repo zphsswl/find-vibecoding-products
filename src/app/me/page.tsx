@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { setPresetAvatarAction, updateMyEmailAction, updateMyProfileAction } from "@/app/me/actions";
+import { MessagesInbox } from "@/components/messages-inbox";
 import { avatarPresets, getAvatarUrl } from "@/lib/community";
 import { getBookmarkedProjectCards, getUserProfileData } from "@/lib/projects";
 import { requireCurrentUser } from "@/lib/session";
@@ -104,6 +105,10 @@ export default async function MyPage() {
             </div>
           </div>
         </section>
+
+        <div className="mt-10">
+          <MessagesInbox />
+        </div>
 
         <section className="mt-10 space-y-4">
           <div className="flex items-center justify-between gap-3">

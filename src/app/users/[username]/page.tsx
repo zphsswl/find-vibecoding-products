@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { toggleFollowAction } from "@/app/users/[username]/actions";
 import { ProjectCard } from "@/components/project-card";
-import { getAvatarUrl } from "@/lib/community";
+import { FollowDMButtons } from "@/components/follow-dm-buttons";
+import { getAvatarUrl } from "@/lib/avatar";
 import { getProjectCards, getUserProfileData } from "@/lib/projects";
 import { getCurrentUser } from "@/lib/session";
 
@@ -82,15 +82,15 @@ export default async function UserProfilePage({
         </div>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          {!isOwnPage && currentUser ? (
-            <form action={toggleFollowAction.bind(null, resolvedParams.username)}>
-              <button type="submit" className="btn-primary">
-                {isFollowing ? "已关注" : "关注"}
-              </button>
-            </form>
+          {currentUser ? (
+            <FollowDMButtons
+              targetUsername={resolvedParams.username}
+              isFollowing={isFollowing}
+              isOwnPage={isOwnPage}
+            />
           ) : null}
           {isOwnPage ? (
-            <Link href="/me" className="btn-secondary">
+            <Link href="/me" className="btn-secondary mt-4 inline-block">
               编辑我的资料
             </Link>
           ) : null}

@@ -38,9 +38,6 @@ export async function SiteHeader() {
           <div className="flex items-center gap-2 sm:gap-3">
             {user ? (
               <>
-                <Link href="/messages" className="font-medium text-text transition hover:text-text/70">
-                  私信
-                </Link>
                 <Link href="/me" className="font-medium text-text transition hover:text-text/70">
                   我的
                 </Link>
