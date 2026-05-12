@@ -17,6 +17,10 @@
 - SQLite / PostgreSQL / Supabase
 - Prisma
 
+## 网站地址
+
+ https://zph001-vibe-coding-gallery.ms.show
+
 ## 本地开发
 
 ```bash
