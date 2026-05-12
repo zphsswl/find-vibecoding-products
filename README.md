@@ -9,7 +9,7 @@
 - `docs/DATABASE.md`：数据库表设计
 - `docs/ARCHITECTURE.md`：技术架构图与实现方案
 
-## 推荐技术栈
+## 技术栈
 
 - Next.js App Router
 - TypeScript
