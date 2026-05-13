@@ -125,18 +125,23 @@ export async function getAnalyticsDashboardData() {
       Array<{ day: string; pageViews: number; projectViews: number; externalClicks: number; signIns: number; submissions: number }>
     >`
       SELECT
-        date(createdAt) as day,
+        date("createdAt") as day,
         SUM(CASE WHEN type = 'page_view' THEN 1 ELSE 0 END) as pageViews,
         SUM(CASE WHEN type = 'project_view' THEN 1 ELSE 0 END) as projectViews,
         SUM(CASE WHEN type = 'external_click' THEN 1 ELSE 0 END) as externalClicks,
         SUM(CASE WHEN type = 'sign_in' THEN 1 ELSE 0 END) as signIns,
         SUM(CASE WHEN type = 'submit_project' THEN 1 ELSE 0 END) as submissions
-      FROM AnalyticsEvent
-      WHERE createdAt >= ${activeWindowStart.toISOString()}
-      GROUP BY date(createdAt)
+      FROM "AnalyticsEvent"
+      WHERE "createdAt" >= ${activeWindowStart}
+      GROUP BY date("createdAt")
       ORDER BY day ASC
     `
   ]);
+
+  const formattedDailySeries = dailySeries.map((d) => ({
+    ...d,
+    day: typeof d.day === "string" ? d.day : new Date(d.day).toISOString().slice(0, 10)
+  }));
 
   const uniqueVisitors = await prisma.analyticsEvent.findMany({
     where: {
@@ -162,7 +167,7 @@ export async function getAnalyticsDashboardData() {
     },
     topProjects,
     sourcePages,
-    dailySeries
+    dailySeries: formattedDailySeries
   };
 }
 
@@ -173,6 +178,7 @@ export type AnalyticsFilters = {
   source?: string;
   query?: string;
   status?: string;
+  userId?: string;
 };
 
 export async function getAnalyticsFilteredData(filters: AnalyticsFilters = {}) {
@@ -192,6 +198,10 @@ export async function getAnalyticsFilteredData(filters: AnalyticsFilters = {}) {
     where.type = filters.type;
   }
 
+  if (filters.userId) {
+    where.userId = filters.userId;
+  }
+
   if (filters.source) {
     where.referrer = { contains: filters.source };
   }
@@ -208,7 +218,8 @@ export async function getAnalyticsFilteredData(filters: AnalyticsFilters = {}) {
     prisma.analyticsEvent.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      take: 100
+      take: 100,
+      include: { user: { select: { username: true, displayName: true } } }
     }),
     prisma.analyticsEvent.groupBy({
       by: ["type"],
@@ -255,5 +266,82 @@ export async function getAnalyticsFilteredData(filters: AnalyticsFilters = {}) {
     topPages,
     topReferrers,
     topProjects
+  };
+}
+
+export async function getUserAnalytics() {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const [users, signIns, activeUsers, userProjects, userComments, userLikes] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        role: true,
+        createdAt: true,
+        _count: { select: { projects: true, comments: true } }
+      }
+    }),
+    prisma.analyticsEvent.findMany({
+      where: { type: "sign_in", createdAt: { gte: thirtyDaysAgo } },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      select: { userId: true, createdAt: true, metadata: true }
+    }),
+    prisma.analyticsEvent.groupBy({
+      by: ["userId"],
+      where: { userId: { not: null }, createdAt: { gte: thirtyDaysAgo } },
+      _count: { userId: true },
+      orderBy: { _count: { userId: "desc" } },
+      take: 10
+    }),
+    prisma.project.findMany({
+      where: { createdAt: { gte: thirtyDaysAgo } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { title: true, slug: true, author: { select: { username: true } }, createdAt: true, status: true }
+    }),
+    prisma.comment.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { id: true, body: true, createdAt: true, author: { select: { username: true } }, project: { select: { slug: true, title: true } } }
+    }),
+    prisma.vote.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { createdAt: true, user: { select: { username: true } }, project: { select: { slug: true, title: true } } }
+    })
+  ]);
+
+  // Match sign-in events with usernames
+  const signInsWithUsernames = signIns.map((s) => {
+    const u = users.find((usr) => usr.id === s.userId);
+    return { username: u?.username ?? "unknown", time: s.createdAt };
+  });
+
+  // Match active users with usernames
+  const activeUsersWithNames = activeUsers
+    .filter((a) => a.userId)
+    .map((a) => {
+      const u = users.find((usr) => usr.id === a.userId);
+      return { userId: a.userId!, username: u?.username ?? "unknown", events: a._count.userId };
+    });
+
+  return {
+    users,
+    signIns: signInsWithUsernames,
+    activeUsers: activeUsersWithNames,
+    userProjects,
+    userComments,
+    userLikes: userLikes.map((l) => ({
+      username: l.user.username,
+      project: l.project.title,
+      slug: l.project.slug,
+      time: l.createdAt
+    }))
   };
 }
